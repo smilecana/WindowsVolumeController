@@ -70,14 +70,31 @@ HRESULT CPGVolumeController::Initialize(DeviceType deviceType, CAudioEndpointVol
 }
 
 
-HRESULT CPGVolumeController::SetMasterVolume(float fVol)
+HRESULT CPGVolumeController::SetMasterVolume(float volume)
 {
 	if (!m_bInit || NULL == m_pEndpointVolume)
 	{
 		return E_INVALIDARG;
 	}
-	HRESULT hr = m_pEndpointVolume->SetMasterVolumeLevelScalar(fVol, &m_guidMyContext);
+	HRESULT hr = m_pEndpointVolume->SetMasterVolumeLevelScalar(volume, &m_guidMyContext);
 	return hr;
+}
+
+
+HRESULT CPGVolumeController::SetMasterVolume(UINT volume)
+{
+	return SetMasterVolume(static_cast<float>(volume) / Max_Volume);
+}
+
+
+HRESULT CPGVolumeController::SetMute(BOOL bMute)
+{
+	if (!m_bInit || NULL == m_pEndpointVolume)
+	{
+		return E_INVALIDARG;
+	}
+
+	return m_pEndpointVolume->SetMute(bMute, &m_guidMyContext);
 }
 
 
@@ -90,17 +107,6 @@ HRESULT CPGVolumeController::GetMasterVolume(float *pfLevel)
 	HRESULT hr = m_pEndpointVolume->GetMasterVolumeLevelScalar(pfLevel);
 
 	return hr;
-}
-
-
-HRESULT CPGVolumeController::SetMute(BOOL bMute)
-{
-	if (!m_bInit || NULL == m_pEndpointVolume)
-	{
-		return E_INVALIDARG;
-	}
-
-	return m_pEndpointVolume->SetMute(bMute, &m_guidMyContext);
 }
 
 
@@ -118,4 +124,12 @@ HRESULT CPGVolumeController::GetMute(BOOL* pbMute)
 GUID CPGVolumeController::GetContextGuid()
 {
 	return m_guidMyContext;
+}
+
+
+HRESULT CPGVolumeController::CalculateIntegerVolume(float volume, UINT& calculated_volume)
+{
+	calculated_volume = UINT(volume * Max_Volume + 0.5f);
+
+	return S_OK;
 }

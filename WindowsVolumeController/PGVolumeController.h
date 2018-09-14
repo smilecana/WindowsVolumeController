@@ -105,11 +105,14 @@ public:
 public:
 	HRESULT Initialize(DeviceType deviceType, CAudioEndpointVolumeCallback::CallbackFuncPtr funcPtr, void* funcParam);
 
-	HRESULT SetMasterVolume(float fVol);
+	HRESULT SetMasterVolume(float volume);
+	HRESULT SetMasterVolume(UINT volume);
 	HRESULT SetMute(BOOL bMute);
-	HRESULT GetMasterVolume(float *pfLevel);
+
+	HRESULT GetMasterVolume(float *volume);
 	HRESULT GetMute(BOOL* pbMute);
 	GUID GetContextGuid();
+	static HRESULT CalculateIntegerVolume(float volume, UINT& calculated_volume);
 
 private:
 	bool m_bInit;
