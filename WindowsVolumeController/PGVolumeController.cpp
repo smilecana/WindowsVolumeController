@@ -121,9 +121,19 @@ HRESULT CPGVolumeController::GetMute(BOOL* pbMute)
 }
 
 
-GUID CPGVolumeController::GetContextGuid()
+HRESULT CPGVolumeController::GetVolumeRange(UINT& minVolume, UINT& maxVolume) const
 {
-	return m_guidMyContext;
+	minVolume = Min_Volume;
+	maxVolume = Max_Volume;
+
+	return S_OK;
+}
+
+
+HRESULT CPGVolumeController::GetContextGuid(GUID& guid)
+{
+	guid = m_guidMyContext;
+	return S_OK;
 }
 
 

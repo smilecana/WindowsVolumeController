@@ -8,6 +8,9 @@
 #include "afxdialogex.h"
 
 #include <atomic>
+#include <stack>
+
+#include <Functiondiscoverykeys_devpkey.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,11 +53,53 @@ BOOL CWindowsVolumeControllerDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	m_slider.SetRange(0, 100);
+	CComPtr<IMMDeviceEnumerator> pEnumerator;
+	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (LPVOID*)&pEnumerator);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+	IMMDeviceCollection* pCollection = nullptr;
+	IMMDevice *pEndpoint = nullptr;
+	IPropertyStore *pProps = NULL;
+	LPWSTR pwszID = nullptr;
+	pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
+	UINT  count = 0;
+	hr = pCollection->GetCount(&count);
+	for (ULONG i = 0; i < count; i++)
+	{
+		// Get pointer to endpoint number i.
+		hr = pCollection->Item(i, &pEndpoint);
+
+		hr = pEndpoint->GetId(&pwszID);
+
+		hr = pEndpoint->OpenPropertyStore(STGM_READ, &pProps);
+
+		PROPVARIANT varName;
+		// Initialize container for property value.
+		PropVariantInit(&varName);
+
+		// Get the endpoint's friendly-name property.
+		hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName);
+		
+		const std::size_t size = 64;
+		wchar_t text[size] = { 0, };
+	}
+
+	SetBackgroundColor(RGB(0x7F, 0x00, 0x7F));
+	LONG ExtendedStyle = GetWindowLong(GetSafeHwnd(), GWL_EXSTYLE);
+	SetWindowLong(GetSafeHwnd(), GWL_EXSTYLE, ExtendedStyle | WS_EX_LAYERED);
+	::SetLayeredWindowAttributes(GetSafeHwnd(), RGB(0x7F, 0xff, 0x7F), 0xDF, LWA_COLORKEY | LWA_ALPHA);
+
+	UINT minVolume = 0, maxVolume = 0;
+	m_controller.GetVolumeRange(minVolume, maxVolume);
+	m_slider.SetRange(minVolume, maxVolume);
 	m_controller.Initialize(CPGVolumeController::DeviceType::Speaker, &VolumeCallback, &m_slider);
 	float volume = 0.0f;
 	m_controller.GetMasterVolume(&volume);
-	m_slider.SetPos(UINT(volume * 100 + 0.5f));
+	UINT new_volume;
+	CPGVolumeController::CalculateIntegerVolume(volume, new_volume);
+	m_slider.SetPos(new_volume);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
