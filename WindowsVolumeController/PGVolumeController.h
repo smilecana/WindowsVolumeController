@@ -100,7 +100,7 @@ public:
 
 public:
 	enum DeviceType { Speaker = 0, Microphone };
-	enum { Max_Volume = 100 };
+	enum { Min_Volume = 0, Max_Volume = 100 };
 
 public:
 	HRESULT Initialize(DeviceType deviceType, CAudioEndpointVolumeCallback::CallbackFuncPtr funcPtr, void* funcParam);
@@ -111,7 +111,9 @@ public:
 
 	HRESULT GetMasterVolume(float *volume);
 	HRESULT GetMute(BOOL* pbMute);
-	GUID GetContextGuid();
+	HRESULT GetVolumeRange(UINT& minVolume, UINT& maxVolume) const;
+	HRESULT GetContextGuid(GUID& guid);
+	
 	static HRESULT CalculateIntegerVolume(float volume, UINT& calculated_volume);
 
 private:
